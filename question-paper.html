@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Question Paper Builder | Samarth Public School</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- html2pdf bundle -->
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+<style>
+  /* Ensure content breaks properly */
+.q-item, .sec-title, .sheet-inner {
+  page-break-inside: avoid;
+}
+.q-item {
+  margin:8px 0;
+  line-height:1.45;
+  white-space: pre-wrap;  /* 👈 ye preserve karega newlines aur spaces */
+}
+
+.page-break {
+  page-break-before: always;
+}
+.paper-h1 {
+  margin-top: 0;   /* 👈 bilkul top se chipakne ke liye */
+  padding-top: 0;
+}
+
+
+  .sheet {
+    width: 210mm; 
+    height: 297mm;
+    background: #fff; 
+    color:#111; 
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    margin: auto;
+  }
+  .sheet.landscape {
+    width: 297mm; 
+    height: 210mm;
+    overflow: hidden;
+  }
+  .sheet.landscape .sheet-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+
+  .sheet-inner{ padding: 8mm 18mm 18mm 18mm;
+   }
+  .page-break { page-break-before: always; }
+
+  /* Print Settings */
+  @media print{
+    body {
+    background: #fff !important;
+    margin: 0;
+  }
+    .no-print{ display:none !important; }
+    .sheet{ 
+      box-shadow:none; 
+      margin: 0 auto;
+      
+      margin-top: 0 !important; 
+    padding-top: 0 !important;
+      
+    }
+  }
+
+  /* Default A4 portrait */
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
+  }
+  
+  /* Landscape pages */
+  .sheet.landscape {
+    page: landscape;
+  }
+  
+  @page landscape {
+    size: A4 landscape;
+    margin: 0 !important;
+  }
+
+  .paper-h1{ font-weight:700; letter-spacing:.3px; }
+  .dots { flex:1; border-bottom:1px dotted #000; margin:0 6px; height:1.2em; }
+  .sec-title{ font-weight:700; }
+  .q-item{ margin:8px 0; line-height:1.45; }
+  #paper { background: white; color: black; }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 text-gray-100 min-h-screen">
+
+  <!-- NAV -->
+  <header class="no-print sticky top-0 z-40 backdrop-blur bg-black/20 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="spsk1.png" class="w-8 h-8 rounded bg-white p-1"/>
+        <span class="font-semibold">Samarth Public School</span>
+      </div>
+      <nav class="text-sm opacity-90">Question Paper Builder</nav>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Form -->
+    <section class="no-print rounded-2xl p-6 bg-white/10 backdrop-blur border border-white/10 shadow-xl">
+      <h2 class="text-xl font-semibold mb-4">Paper Settings</h2>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <label class="block">
+  <span class="text-sm text-gray-300">School Name</span>
+  <input id="sch" 
+    class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" 
+    value="SAMARTH PUBLIC SCHOOL KHATI" readonly>
+</label>
+
+        <label class="block">
+          <span class="text-sm text-gray-300">Exam Title</span>
+          <input id="exam" class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" value="ANNUAL SUPPLY EXAMINATION 2024 - 25">
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-300">Subject</span>
+          <input id="subject" class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" value="Science">
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-300">Class</span>
+          <input id="klass" class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" value="6th">
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-300">Max Marks</span>
+          <input id="marks" class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" value="70">
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-300">Duration</span>
+          <input id="duration" class="mt-1 w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10" placeholder="3 Hours">
+        </label>
+      </div>
+
+      <!-- Sections Builder -->
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Sections</h3>
+          <div class="flex gap-2">
+            <button id="addSec" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-400 to-indigo-400 text-black font-semibold">+ Add Section</button>
+            <button id="clearAll" class="px-3 py-1.5 rounded-lg border border-white/20">Clear</button>
+          </div>
+        </div>
+        <div id="secWrap" class="space-y-5"></div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button id="generate" class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 font-bold text-black shadow-lg">Portrait Preview</button>
+        <button id="generateLandscape" class="px-4 py-2 rounded-xl bg-purple-600 text-white">Landscape Preview</button>
+        <button id="downloadPortrait" class="px-4 py-2 rounded-xl bg-green-600 text-white">Portrait PDF</button>
+        <button id="downloadLandscape" class="px-4 py-2 rounded-xl bg-orange-600 text-white">Landscape PDF</button>
+        <button id="demo" class="px-4 py-2 rounded-xl border border-white/20">Fill Demo Data</button>
+      </div>
+    </section>
+
+    <!-- Preview -->
+    <section id="previewWrap" class="mt-10 hidden flex-col items-center gap-4">
+      <h2 class="no-print text-lg font-semibold">Paper Preview (A4)</h2>
+      <div id="paper" class="sheet">
+        <div class="sheet-inner" id="paperInner"></div>
+      </div>
+    </section>
+  </main>
+
+<script>
+const $ = s => document.querySelector(s);
+const secWrap = $("#secWrap");
+const paperInner = $("#paperInner");
+
+function sectionTemplate(idx=1){
+  return `
+  <div class="p-4 rounded-xl bg-black/30 border border-white/10">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-gray-300">Section <span class="font-semibold">#<span class="idx">${idx}</span></span></div>
+      <div class="flex gap-2">
+        <button class="dup px-2 py-1 rounded border border-white/20 text-xs">Duplicate</button>
+        <button class="del px-2 py-1 rounded border border-white/20 text-xs">Remove</button>
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-3 mt-3">
+      <label class="block">
+        <span class="text-xs text-gray-300">Heading</span>
+        <input class="sec-title-input mt-1 w-full px-3 py-2 rounded bg-black/40 border border-white/10">
+      </label>
+      <label class="block">
+        <span class="text-xs text-gray-300">Instruction</span>
+        <input class="sec-inst-input mt-1 w-full px-3 py-2 rounded bg-black/40 border border-white/10">
+      </label>
+    </div>
+    <label class="block mt-3">
+      <span class="text-xs text-gray-300">Questions (one per line)</span>
+      <textarea class="sec-qs-input mt-1 w-full min-h-[150px] px-3 py-2 rounded bg-black/40 border border-white/10"></textarea>
+    </label>
+  </div>`;
+}
+
+function refreshIndices(){
+  [...secWrap.querySelectorAll(".idx")].forEach((s,i)=>s.textContent = i+1);
+}
+function addSection(prefill){
+  const div = document.createElement('div');
+  div.innerHTML = sectionTemplate(secWrap.children.length+1);
+  const el = div.firstElementChild;
+  secWrap.appendChild(el);
+  el.querySelector(".del").onclick = () => { el.remove(); refreshIndices(); };
+  el.querySelector(".dup").onclick = () => {
+    const copy = el.cloneNode(true);
+    secWrap.insertBefore(copy, el.nextSibling);
+    copy.querySelector(".del").onclick = () => { copy.remove(); refreshIndices(); };
+    copy.querySelector(".dup").onclick = () => {};
+    refreshIndices();
+  };
+  if(prefill){
+    el.querySelector(".sec-title-input").value = prefill.title || "";
+    el.querySelector(".sec-inst-input").value  = prefill.inst  || "";
+    el.querySelector(".sec-qs-input").value    = (prefill.qs||[]).join("\n");
+  }
+  return el;
+}
+
+function renderHeader(){
+  const school   = "SAMARTH PUBLIC SCHOOL KHATI";
+  const exam     = $("#exam").value.trim();
+  const subject  = $("#subject").value.trim();
+  const klass    = $("#klass").value.trim();
+  const marks    = $("#marks").value.trim();
+  const duration = $("#duration").value.trim();
+
+  return `
+  <div style="text-align:center;margin-bottom:15px;">
+    <div style="font-weight:700;font-size:18px;margin:0;">${school}</div>
+    <div style="font-size:12.5px;margin-top:2px;">${exam}</div>
+    <div style="font-size:12.5px;margin-top:4px;display:flex;justify-content:space-between;">
+      <div>Subject: <b>${subject}</b></div>
+      <div>Class: <b>${klass}</b></div>
+    </div>
+    <div style="display:flex;align-items:center;font-size:12.5px;margin-top:8px;">
+      <div>Name</div><div style="flex:1;border-bottom:1px dotted #000;margin:0 6px;height:1.2em;"></div>
+      <div style="margin-left:24px;">Roll No.</div><div style="flex:1;border-bottom:1px dotted #000;margin:0 6px;height:1.2em;"></div>
+      <div style="margin-left:24px;">Marks: <b>${marks}</b></div>
+      ${duration ? `<div style="margin-left:24px;">Time: <b>${duration}</b></div>` : ``}
+    </div>
+    <hr style="margin:12px 0;border-top:1px solid rgba(0,0,0,0.2);">
+  </div>`;
+}
+
+
+function parseSections(){
+  const out = [];
+  secWrap.querySelectorAll(".p-4.rounded-xl").forEach(card=>{
+    const title = card.querySelector(".sec-title-input").value.trim();
+    const inst  = card.querySelector(".sec-inst-input").value.trim();
+    const qsRaw = card.querySelector(".sec-qs-input").value.trim();
+    const qs = qsRaw ? qsRaw.split(/\n+/).map(s=>s.trim()).filter(Boolean) : [];
+    if(title || qs.length) out.push({title, inst, qs});
+  });
+  return out;
+}
+function renderSections(sections){
+  let html = ``;
+  sections.forEach((s,si)=>{
+   html += `<div class="mb-4">
+  <div class="sec-title text-[13.5px]">${s.title || ''}</div>
+  ${s.inst ? `<div class="text-[12px] italic mt-0.5">${s.inst}</div>`:``}
+  <ol class="mt-2 pl-5">
+    ${s.qs.map((q)=>`<li class="q-item text-[13px]">${q}</li>`).join('')}
+  </ol>
+</div>`;
+  });
+  return html;
+}
+
+function renderSingleSection(s){
+  return `<div style="margin-bottom:16px;">
+    <div style="font-weight:700;font-size:13.5px;">${s.title || ''}</div>
+    ${s.inst ? `<div style="font-size:12px;font-style:italic;margin-top:2px;">${s.inst}</div>`:``}
+    <ol style="margin-top:8px;padding-left:20px;">
+      ${s.qs.map((q)=>`<li style="margin:8px 0;line-height:1.45;font-size:13px;">${q}</li>`).join('')}
+    </ol>
+  </div>`;
+}
+function generate(){
+  const secs = parseSections();
+  if(secs.length === 0) {
+    alert('Please add at least one section with questions');
+    return;
+  }
+  
+  const header = renderHeader();
+  const isLandscape = document.getElementById('paper').classList.contains('landscape');
+  
+  if(isLandscape){
+    let html = header;
+    
+    for(let i = 0; i < secs.length; i += 2){
+      const sec1 = secs[i];
+      const sec2 = secs[i + 1];
+      
+      if(i > 0) html += '<div style="page-break-before:always;"></div>';
+      
+      html += `<div style="display:flex;gap:10mm;align-items:flex-start;">
+        <div style="width:calc(50% - 5mm);overflow:hidden;">${renderSingleSection(sec1)}</div>
+        <div style="width:calc(50% - 5mm);overflow:hidden;">${sec2 ? renderSingleSection(sec2) : ''}</div>
+      </div>`;
+    }
+    
+    paperInner.innerHTML = html;
+  } else {
+    paperInner.innerHTML = header + secs.map(s => renderSingleSection(s)).join('');
+  }
+
+  document.getElementById("previewWrap").classList.remove("hidden");
+}
+
+function insertPageBreaks(){
+  const paperInner = document.getElementById("paperInner");
+  const maxHeight = 1050; // pixels ~ A4 height usable in preview
+  let currentHeight = 0;
+  [...paperInner.children].forEach((child, i) => {
+    currentHeight += child.offsetHeight;
+    if(currentHeight > maxHeight){
+      const br = document.createElement("div");
+      br.className = "page-break";
+      paperInner.insertBefore(br, child);
+      currentHeight = child.offsetHeight; // reset after break
+    }
+  });
+}
+
+function downloadPortraitPDF(){
+  generate();
+  const el = document.getElementById('paper');
+  el.classList.remove('landscape');
+  const opt = {
+    margin:[0,0,0,0],
+    filename:'question-paper-portrait.pdf',
+    image:{ type:'jpeg', quality:1 },
+    html2canvas:{ scale:2, useCORS:true },
+    jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' },
+    pagebreak:{ mode:['css','legacy'] }
+  };
+  setTimeout(()=>{ html2pdf().set(opt).from(el).save(); }, 500);
+}
+
+function downloadLandscapePDF(){
+  const el = document.getElementById('paper');
+  el.classList.add('landscape');
+  generate(); // Generate after adding landscape class
+  const opt = {
+    margin:[0,0,0,0],
+    filename:'question-paper-landscape.pdf',
+    image:{ type:'jpeg', quality:1 },
+    html2canvas:{ scale:2, useCORS:true },
+    jsPDF:{ unit:'mm', format:'a4', orientation:'landscape' },
+    pagebreak:{ mode:['css','legacy'] }
+  };
+  setTimeout(()=>{ html2pdf().set(opt).from(el).save(); }, 500);
+}
+
+function generateLandscape(){
+  const paper = document.getElementById('paper');
+  paper.classList.add('landscape');
+  setTimeout(() => generate(), 100);
+}
+
+function generatePortrait(){
+  const paper = document.getElementById('paper');
+  paper.classList.remove('landscape');
+  setTimeout(() => generate(), 100);
+}
+
+document.getElementById('addSec').onclick = ()=>{ addSection(); refreshIndices(); };
+document.getElementById('clearAll').onclick = ()=>{ secWrap.innerHTML=""; refreshIndices(); };
+document.getElementById('generate').onclick = generatePortrait;
+document.getElementById('generateLandscape').onclick = generateLandscape;
+document.getElementById('downloadPortrait').onclick = downloadPortraitPDF;
+document.getElementById('downloadLandscape').onclick = downloadLandscapePDF;
+document.getElementById('demo').onclick = ()=>{ 
+  secWrap.innerHTML=""; 
+  addSection({title:"Section A",qs:["Q1","Q2","Q3"]}); 
+  addSection({title:"Section B",qs:["Q4","Q5","Q6"]}); 
+  generatePortrait(); 
+};
+
+window.addEventListener('DOMContentLoaded', ()=>{ addSection(); refreshIndices(); });
+</script>
+</body>
+</html>

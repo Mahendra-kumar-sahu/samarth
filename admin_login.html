@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Samarth Public School</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298, #00c6ff);
+    }
+
+    .login-container {
+      text-align: center;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      color: #fff;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .login-box img {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+    }
+
+    .login-box h1 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .login-box input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, background 0.3s;
+    }
+
+    .login-box button:hover {
+      transform: scale(1.03);
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+    }
+
+    .error {
+      color: #ff4d4d;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media(max-width: 480px) {
+      .login-box {
+        padding: 30px 20px;
+      }
+      .login-box h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <!-- School Logo -->
+      <img src="spsk1.png" alt="School Logo">
+      
+      <!-- School Name -->
+      <h1>Samarth Public School</h1>
+      <h2 style="margin-bottom: 15px; font-size: 18px; font-weight: normal; color: #e0e0e0;">
+        Admin Login
+      </h2>
+
+      <!-- Login Form -->
+      <input type="text" id="username" placeholder="Enter Username">
+      <input type="password" id="password" placeholder="Enter Password">
+      <button onclick="login()">Login</button>
+      <p class="error" id="error-msg"></p>
+    </div>
+  </div>
+
+  <script>
+    function login() {
+      let user = document.getElementById("username").value;
+      let pass = document.getElementById("password").value;
+
+      // Hardcoded credentials
+      if(user === "spsk" && pass === "2025") {
+        localStorage.setItem("isLoggedIn", "true");
+        window.location.href = "question-paper.html";
+      } else {
+        document.getElementById("error-msg").innerText = "❌ Invalid Username or Password!";
+      }
+    }
+  </script>
+</body>
+</html>
