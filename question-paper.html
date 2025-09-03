@@ -234,6 +234,22 @@ function renderHeader(){
   const klass    = $("#klass").value.trim();
   const marks    = $("#marks").value.trim();
   const duration = $("#duration").value.trim();
+  const isLandscape = document.getElementById('paper').classList.contains('landscape');
+
+  if(isLandscape){
+    return `
+    <div style="text-align:center;margin-bottom:15px;">
+      <div style="font-weight:700;font-size:18px;margin:0;">${school}</div>
+      <div style="font-size:12.5px;margin-top:2px;">${exam}</div>
+      <div style="font-size:12.5px;margin-top:4px;">
+        <div>Subject: <b>${subject}</b> | Class: <b>${klass}</b></div>
+      </div>
+      <div style="font-size:12.5px;margin-top:8px;">
+        <div>Name: _____________ Roll No.: _______ Marks: <b>${marks}</b> ${duration ? `Time: <b>${duration}</b>` : ``}</div>
+      </div>
+      <hr style="margin:12px 0;border-top:1px solid rgba(0,0,0,0.2);">
+    </div>`;
+  }
 
   return `
   <div style="text-align:center;margin-bottom:15px;">
@@ -299,21 +315,29 @@ function generate(){
   const isLandscape = document.getElementById('paper').classList.contains('landscape');
   
   if(isLandscape){
-    let html = header;
+    const allQuestions = [];
+    secs.forEach(sec => {
+      if(sec.title) allQuestions.push(`<div style="font-weight:700;font-size:13.5px;margin:16px 0 8px 0;">${sec.title}</div>`);
+      if(sec.inst) allQuestions.push(`<div style="font-size:12px;font-style:italic;margin:2px 0;">${sec.inst}</div>`);
+      sec.qs.forEach((q, idx) => {
+        allQuestions.push(`<div style="margin:8px 0;line-height:1.45;font-size:13px;">${idx + 1}. ${q}</div>`);
+      });
+    });
     
-    for(let i = 0; i < secs.length; i += 2){
-      const sec1 = secs[i];
-      const sec2 = secs[i + 1];
-      
-      if(i > 0) html += '<div style="page-break-before:always;"></div>';
-      
-      html += `<div style="display:flex;gap:10mm;align-items:flex-start;">
-        <div style="width:calc(50% - 5mm);overflow:hidden;">${renderSingleSection(sec1)}</div>
-        <div style="width:calc(50% - 5mm);overflow:hidden;">${sec2 ? renderSingleSection(sec2) : ''}</div>
-      </div>`;
-    }
+    const mid = Math.ceil(allQuestions.length / 2);
+    const leftQuestions = allQuestions.slice(0, mid);
+    const rightQuestions = allQuestions.slice(mid);
     
-    paperInner.innerHTML = html;
+    paperInner.innerHTML = `
+    <div style="display:flex;gap:5mm;">
+      <div style="width:calc(50% - 2.5mm);border-right:1px solid #000;padding-right:5mm;">
+        ${header}
+        ${leftQuestions.join('')}
+      </div>
+      <div style="width:calc(50% - 2.5mm);padding-left:5mm;">
+        ${rightQuestions.join('')}
+      </div>
+    </div>`;
   } else {
     paperInner.innerHTML = header + secs.map(s => renderSingleSection(s)).join('');
   }
@@ -386,8 +410,9 @@ document.getElementById('downloadPortrait').onclick = downloadPortraitPDF;
 document.getElementById('downloadLandscape').onclick = downloadLandscapePDF;
 document.getElementById('demo').onclick = ()=>{ 
   secWrap.innerHTML=""; 
-  addSection({title:"Section A",qs:["Q1","Q2","Q3"]}); 
-  addSection({title:"Section B",qs:["Q4","Q5","Q6"]}); 
+  addSection({title:"Section A - MCQ",qs:["What is photosynthesis?","Name the largest planet","Capital of India"]}); 
+  addSection({title:"Section B - Short Answer",qs:["Explain water cycle","Define democracy","What is gravity?"]}); 
+  addSection({title:"Section C - Long Answer",qs:["Describe the solar system in detail","Explain the process of digestion"]}); 
   generatePortrait(); 
 };
 
