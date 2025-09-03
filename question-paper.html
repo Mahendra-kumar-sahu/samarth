@@ -42,8 +42,10 @@
     overflow: hidden;
   }
   .sheet.landscape .sheet-inner {
-    display: flex;
-    flex-direction: column;
+    column-count: 2;
+    column-gap: 5mm;
+    column-fill: auto;
+    column-rule: 1px solid #000;
     height: 100%;
   }
 
@@ -238,7 +240,7 @@ function renderHeader(){
 
   if(isLandscape){
     return `
-    <div style="text-align:center;margin-bottom:15px;">
+    <div style="text-align:center;margin-bottom:15px;break-inside:avoid;">
       <div style="font-weight:700;font-size:18px;margin:0;">${school}</div>
       <div style="font-size:12.5px;margin-top:2px;">${exam}</div>
       <div style="font-size:12.5px;margin-top:4px;">
@@ -295,8 +297,9 @@ function renderSections(sections){
   return html;
 }
 
-function renderSingleSection(s){
-  return `<div style="margin-bottom:16px;">
+function renderSingleSection(s, index, isLandscape){
+  const pageBreak = isLandscape && index > 0 && index % 2 === 0 ? 'page-break-before:always;' : '';
+  return `<div style="margin-bottom:16px;${pageBreak}">
     <div style="font-weight:700;font-size:13.5px;">${s.title || ''}</div>
     ${s.inst ? `<div style="font-size:12px;font-style:italic;margin-top:2px;">${s.inst}</div>`:``}
     <ol style="margin-top:8px;padding-left:20px;">
@@ -315,31 +318,9 @@ function generate(){
   const isLandscape = document.getElementById('paper').classList.contains('landscape');
   
   if(isLandscape){
-    const allQuestions = [];
-    secs.forEach(sec => {
-      if(sec.title) allQuestions.push(`<div style="font-weight:700;font-size:13.5px;margin:16px 0 8px 0;">${sec.title}</div>`);
-      if(sec.inst) allQuestions.push(`<div style="font-size:12px;font-style:italic;margin:2px 0;">${sec.inst}</div>`);
-      sec.qs.forEach((q, idx) => {
-        allQuestions.push(`<div style="margin:8px 0;line-height:1.45;font-size:13px;">${idx + 1}. ${q}</div>`);
-      });
-    });
-    
-    const mid = Math.ceil(allQuestions.length / 2);
-    const leftQuestions = allQuestions.slice(0, mid);
-    const rightQuestions = allQuestions.slice(mid);
-    
-    paperInner.innerHTML = `
-    <div style="display:flex;gap:5mm;">
-      <div style="width:calc(50% - 2.5mm);border-right:1px solid #000;padding-right:5mm;">
-        ${header}
-        ${leftQuestions.join('')}
-      </div>
-      <div style="width:calc(50% - 2.5mm);padding-left:5mm;">
-        ${rightQuestions.join('')}
-      </div>
-    </div>`;
+    paperInner.innerHTML = header + secs.map((s, i) => renderSingleSection(s, i, true)).join('');
   } else {
-    paperInner.innerHTML = header + secs.map(s => renderSingleSection(s)).join('');
+    paperInner.innerHTML = header + secs.map((s, i) => renderSingleSection(s, i, false)).join('');
   }
 
   document.getElementById("previewWrap").classList.remove("hidden");
